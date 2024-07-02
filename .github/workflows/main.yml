@@ -1,0 +1,13 @@
+on: push
+
+jobs:
+  build-node:
+    runs-on: ubuntu-latest
+    container:
+      image: node:16
+    steps:
+      - run: node --version
+      - run: npm --version
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: node index.js
