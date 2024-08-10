@@ -41,7 +41,7 @@
 	"credentials": {
 		"gmailAccount": {
 			"email": "",
-			"clientId": "",
+			"clientId": "366059112965-qecigrl3voer3n7bj0qgan5oima2a200.apps.googleusercontent.com",
 			"clientSecret": "",
 			"refreshToken": "",
 			"apiKey": ""
