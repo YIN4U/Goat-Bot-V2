@@ -1,19 +1,3 @@
-/**
- * @Arabic
- * يجب أن تكون لديك معرفة بأساسيات JavaScript مثل المتغيرات، الدوال، الحلقات، المصفوفات، الكائنات، الوعد (Promise)، async/await، ... يمكنك معرفة المزيد من هنا: https://developer.mozilla.org/en-US/docs/Web/JavaScript أو هنا: https://www.w3schools.com/js/
- * وأيضًا يجب أن تكون لديك معرفة بـ Node.js مثل require, module.exports, ... يمكنك معرفة المزيد من هنا: https://nodejs.org/en/docs/
- * بالإضافة إلى معرفة API غير الرسمية لـ Facebook مثل api.sendMessage، api.changeNickname،... يمكنك معرفة المزيد من هنا: https://github.com/ntkhang03/fb-chat-api/blob/master/DOCS.md
- * إذا كان اسم الملف ينتهي بـ `.eg.js` فلن يتم تحميله في الروبوت، إذا كنت ترغب في تحميله في الروبوت قم بتغيير الامتداد إلى `.js`
- */
-
-/**
- * @English
- * You should have basic knowledge of JavaScript such as variables, functions, loops, arrays, objects, promise, async/await, ... you can learn more at: https://developer.mozilla.org/en-US/docs/Web/JavaScript or here: https://www.w3schools.com/js/
- * Also, you need to have knowledge of Node.js like require, module.exports, ... you can learn more at: https://nodejs.org/en/docs/
- * And knowledge of unofficial Facebook API like api.sendMessage, api.changeNickname,... you can learn more at: https://github.com/ntkhang03/fb-chat-api/blob/master/DOCS.md
- * If the file name ends with `.eg.js` then it will not be loaded into the bot, if you want to load it into the bot then change the extension of the file to `.js`
- */
-
 module.exports = {
     config: {
         name: "تفكيك", // اسم الأمر
@@ -49,18 +33,8 @@ module.exports = {
         }
     },
 
-    handleReply: async function ({ api, event, handleReply, Currencies, getLang }) {
-        const userAnswer = event.body.trim().toLowerCase();
-        const correctAnswer = handleReply.correctAnswer.toLowerCase();
-        const userName = global.data.userName.get(event.senderID) || await Users.getNameUser(event.senderID);
-
-        if (userAnswer === correctAnswer) {
-            Currencies.increaseMoney(event.senderID, 50);
-            api.sendMessage(getLang("congrats", userName), event.threadID);
-            api.unsendMessage(handleReply.messageID); 
-        } else {
-            api.sendMessage(getLang("tryAgain"), event.threadID);
-        }
+    onStart: async function (context) {
+        return this.run(context);
     },
 
     run: async function ({ api, event, args, getLang }) {
@@ -79,6 +53,20 @@ module.exports = {
                 });
             }
         });
+    },
+
+    handleReply: async function ({ api, event, handleReply, Currencies, getLang }) {
+        const userAnswer = event.body.trim().toLowerCase();
+        const correctAnswer = handleReply.correctAnswer.toLowerCase();
+        const userName = global.data.userName.get(event.senderID) || await Users.getNameUser(event.senderID);
+
+        if (userAnswer === correctAnswer) {
+            Currencies.increaseMoney(event.senderID, 50);
+            api.sendMessage(getLang("congrats", userName), event.threadID);
+            api.unsendMessage(handleReply.messageID); 
+        } else {
+            api.sendMessage(getLang("tryAgain"), event.threadID);
+        }
     }
 };
 
