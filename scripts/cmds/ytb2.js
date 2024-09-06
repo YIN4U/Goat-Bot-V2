@@ -1,58 +1,122 @@
-const ytdl = require('ytdl-core');
-const { MessageAttachment } = require('discord.js');
+const axios = require("axios");
+const ytdl = require("@distube/ytdl-core");
+const fs = require("fs-extra");
 
-// Function to get video info and prepare to play the audio
-async function getVideoInfo(url) {
-    try {
-        const json = await ytdl.getInfo(url);
-
-        // Handle cases where videoDetails might be undefined
-        const videoDetails = json.videoDetails || {};
-        const title = videoDetails.title || "Unknown Title";
-        const author = videoDetails.author?.name || "Unknown Author";
-        const duration = videoDetails.lengthSeconds || "Unknown Duration";
-
-        console.log(`Title: ${title}`);
-        console.log(`Author: ${author}`);
-        console.log(`Duration: ${duration} seconds`);
-
-        // Prepare the audio stream
-        const audioStream = ytdl(url, { filter: 'audioonly' });
-
-        // Do something with the audio stream, e.g., play it in a voice channel
-        return audioStream;
-
-    } catch (error) {
-        console.error("Failed to fetch video information:", error);
-
-        // Fallback to just playing the audio without needing the video details
-        const audioStreamFallback = ytdl(url, { filter: 'audioonly' });
-        return audioStreamFallback;
-    }
+async function getStreamAndSize(url, path = "") {
+	const response = await axios({
+		method: "GET",
+		url,
+		responseType: "stream",
+		headers: {
+			'Range': 'bytes=0-'
+		}
+	});
+	if (path) response.data.path = path;
+	const totalLength = response.headers["content-length"];
+	return {
+		stream: response.data,
+		size: totalLength
+	};
 }
 
-// Example command function that uses the getVideoInfo function
 module.exports = {
-    name: 'شغل',
-    description: 'Play a YouTube audio in a voice channel',
-    async execute(message, args) {
-        const url = args[0];
-        if (!url) {
-            return message.reply('Please provide a valid YouTube URL.');
-        }
+	config: {
+		name: "شغل",
+		version: "1.16",
+		author: "NTKhang",
+		countDown: 5,
+		role: 0,
+		description: {
+			en: "Download video or audio from YouTube"
+		},
+		category: "media",
+		guide: {
+			en: "   {pn} [video|-v] [<video link>]: use to download video from YouTube."
+				+ "\n   {pn} [audio|-a] [<video link>]: use to download audio from YouTube"
+		}
+	},
 
-        try {
-            const audioStream = await getVideoInfo(url);
+	onStart: async function ({ args, message }) {
+		let type;
+		switch (args[0]) {
+			case "-v":
+			case "video":
+				type = "video";
+				break;
+			case "-a":
+			case "audio":
+				type = "audio";
+				break;
+			default:
+				return message.SyntaxError();
+		}
 
-            // Now you can pipe the audioStream to the voice connection or any other handler
-            const dispatcher = message.guild.voice?.connection.play(audioStream);
-            dispatcher.on('finish', () => console.log('Audio has finished playing.'));
+		const checkurl = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})(?:\S+)?$/;
+		const urlYtb = checkurl.test(args[1]);
 
-            message.reply(`Now playing audio from ${url}`);
-
-        } catch (error) {
-            console.error("Error while playing the audio:", error);
-            message.reply('There was an error trying to play the audio.');
-        }
-    }
+		if (urlYtb) {
+			const videoId = extractVideoId(args[1]);
+			handle({ type, videoId, message });
+			return;
+		} else {
+			return message.reply("Invalid YouTube link.");
+		}
+	}
 };
+
+async function handle({ type, videoId, message }) {
+	if (type === "video") {
+		const MAX_SIZE = 83 * 1024 * 1024; // 83MB
+		const { formats } = await ytdl.getInfo(videoId);
+		const getFormat = formats
+			.filter(f => f.hasVideo && f.hasAudio && f.quality === 'tiny' && f.audioBitrate === 128)
+			.sort((a, b) => b.contentLength - a.contentLength)
+			.find(f => f.contentLength && f.contentLength < MAX_SIZE);
+		if (!getFormat) return message.reply("No suitable video format found.");
+
+		const getStream = await getStreamAndSize(getFormat.url, `${videoId}.mp4`);
+		if (getStream.size > MAX_SIZE) return message.reply("Video size exceeds the limit.");
+
+		const savePath = __dirname + `/tmp/${videoId}_${Date.now()}.mp4`;
+		const writeStream = fs.createWriteStream(savePath);
+		getStream.stream.pipe(writeStream);
+
+		writeStream.on("finish", () => {
+			message.reply({
+				attachment: fs.createReadStream(savePath)
+			}, async (err) => {
+				if (err) return message.reply("Error sending video.");
+				fs.unlinkSync(savePath);
+			});
+		});
+	} else if (type === "audio") {
+		const MAX_SIZE = 27262976; // 26MB
+		const { formats } = await ytdl.getInfo(videoId);
+		const getFormat = formats
+			.filter(f => f.hasAudio && !f.hasVideo)
+			.sort((a, b) => b.contentLength - a.contentLength)
+			.find(f => f.contentLength && f.contentLength < MAX_SIZE);
+		if (!getFormat) return message.reply("No suitable audio format found.");
+
+		const getStream = await getStreamAndSize(getFormat.url, `${videoId}.mp3`);
+		if (getStream.size > MAX_SIZE) return message.reply("Audio size exceeds the limit.");
+
+		const savePath = __dirname + `/tmp/${videoId}_${Date.now()}.mp3`;
+		const writeStream = fs.createWriteStream(savePath);
+		getStream.stream.pipe(writeStream);
+
+		writeStream.on("finish", () => {
+			message.reply({
+				attachment: fs.createReadStream(savePath)
+			}, async (err) => {
+				if (err) return message.reply("Error sending audio.");
+				fs.unlinkSync(savePath);
+			});
+		});
+	}
+}
+
+function extractVideoId(url) {
+	const id = url.split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/|\/shorts\/)/);
+	return id[2] !== undefined ? id[2].split(/[^0-9a-z_\-]/i)[0] : id[0];
+}
