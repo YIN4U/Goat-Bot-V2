@@ -6,40 +6,33 @@ module.exports = {
 		countDown: 10,
 		role: 2,
 		description: {
-			en: "Remove user from the group",
-			ar: "إزالة المستخدم من المجموعة"
+			en: "Bot leaves the group",
+			ar: "البوت يغادر المجموعة"
 		},
 		category: "Admin",
 		guide: {
-			en: "{pn} [id]",
-			ar: "{pn} [معرف]"
+			en: "{pn}",
+			ar: "{pn}"
 		}
 	},
 
 	langs: {
 		en: {
-			successRemove: "- Successfully removed the user from the group",
-			noUserId: "No user ID provided",
-			failedRemove: "- Failed to remove the user from the group"
+			successLeave: "- The bot has left the group",
+			failedLeave: "- Failed to make the bot leave the group"
 		},
 		ar: {
-			successRemove: "- تم إزالة المستخدم من المجموعة بنجاح",
-			noUserId: "لم يتم توفير معرف المستخدم",
-			failedRemove: "- فشل في إزالة المستخدم من المجموعة"
+			successLeave: "- البوت غادر المجموعة بنجاح",
+			failedLeave: "- فشل البوت في مغادرة المجموعة"
 		}
 	},
 
-	onStart: async function ({ api, event, args, getLang }) {
-		if (!args[0]) {
-			return api.sendMessage(getLang('noUserId'), event.threadID);
-		}
-		
-		const userID = args.join(" ");
+	onStart: async function ({ api, event, getLang }) {
 		try {
-			await api.removeUserFromGroup(api.getCurrentUserID(), userID);
-			await api.sendMessage(getLang('successRemove'), event.threadID);
+			await api.removeUserFromGroup(api.getCurrentUserID(), event.threadID);
+			await api.sendMessage(getLang('successLeave'), event.threadID);
 		} catch (err) {
-			await api.sendMessage(getLang('failedRemove'), event.threadID);
+			await api.sendMessage(getLang('failedLeave'), event.threadID);
 		}
 	}
 };
