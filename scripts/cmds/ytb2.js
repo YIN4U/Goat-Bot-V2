@@ -31,8 +31,8 @@ module.exports = {
 		},
 		category: "media",
 		guide: {
-			en: "   {pn} [video|-v] [<video link>]: use to download video from YouTube."
-				+ "\n   {pn} [audio|-a] [<video link>]: use to download audio from YouTube"
+			en: "   {pn} [video|-v] [<video name or link>]: use to download video from YouTube."
+				+ "\n   {pn} [audio|-a] [<video name or link>]: use to download audio from YouTube"
 		}
 	},
 
@@ -57,9 +57,13 @@ module.exports = {
 		if (urlYtb) {
 			const videoId = extractVideoId(args[1]);
 			handle({ type, videoId, message });
-			return;
 		} else {
-			return message.reply("Invalid YouTube link.");
+			const videoId = await searchYouTube(args.slice(1).join(" "));
+			if (videoId) {
+				handle({ type, videoId, message });
+			} else {
+				message.reply("No results found for your query.");
+			}
 		}
 	}
 };
@@ -113,6 +117,24 @@ async function handle({ type, videoId, message }) {
 				fs.unlinkSync(savePath);
 			});
 		});
+	}
+}
+
+async function searchYouTube(query) {
+	try {
+		const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+		const res = await axios.get(url);
+		const getJson = JSON.parse(res.data.split("ytInitialData = ")[1].split(";</script>")[0]);
+		const videos = getJson.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents[0].itemSectionRenderer.contents;
+
+		for (const video of videos) {
+			if (video.videoRenderer) {
+				return video.videoRenderer.videoId;
+			}
+		}
+		return null;
+	} catch (e) {
+		throw new Error("Cannot search video");
 	}
 }
 
