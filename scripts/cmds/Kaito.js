@@ -64,6 +64,12 @@ module.exports = {
 		}
 	},
 
+	onStart: () => {
+		global.ENABLE_CHAT = true;
+		global.config.ADD_FUNCTION = false;
+		global.config.DEL_FUNCTION = false;
+	},
+
 	handleEvent: ({ event, api }) => {
 		const { threadID, messageID, body } = event;
 		if (!global.ENABLE_CHAT || !body) return;
