@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const DATA_FILE = path.join(__dirname, "H.json");
+
 module.exports = {
 	config: {
 		name: "كايتو",
