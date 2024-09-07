@@ -65,6 +65,12 @@ module.exports = {
 	},
 
 	onStart: () => {
+		// تأكد من أن global.config موجود
+		if (!global.config) {
+			global.config = {};
+		}
+
+		// تعيين القيم للخصائص
 		global.ENABLE_CHAT = true;
 		global.config.ADD_FUNCTION = false;
 		global.config.DEL_FUNCTION = false;
