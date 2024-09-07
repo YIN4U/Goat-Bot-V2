@@ -1,184 +1,148 @@
 const fs = require("fs");
 const path = require("path");
 
-const DATA_FILE = path.join(__dirname, "H.json");
-
 module.exports = {
-	config: {
-		name: "كايتو",
-		version: "1.1.1",
-		author: "Yin",
-		countDown: 2,
-		role: 0,
-		description: {
-			en: "Start a conversation with Harley or make it leave the group",
-			ar: "ابدأ محادثة مع هارلي أو اجعلها تغادر المجموعة"
-		},
-		category: "chatbots",
-		guide: {
-			en: "{pn} [command]",
-			ar: "{pn} [أمر]"
-		}
-	},
+  config: {
+    name: "هارلي",
+    version: "1.1.1",
+    author: "Yin",
+    countDown: 2,
+    role: 0,
+    description: {
+      ar: "ابدأ محادثة مع هارلي",
+      en: "Start a conversation with Harley"
+    },
+    category: "chatbots",
+    guide: {
+      ar: "   {pn} التحدث مع البوت"
+    },
+    usePrefix: true,
+    usages: "التحدث مع البوت",
+  },
 
-	langs: {
-		en: {
-			successLeave: "- The bot has left the group",
-			failedLeave: "- Failed to make the bot leave the group",
-			chatEnabled: "- Chat mode is now enabled.",
-			chatDisabled: "- Chat mode is now disabled.",
-			addFunctionEnabled: "- Add function is now enabled.",
-			addFunctionDisabled: "- Add function is now disabled.",
-			deleteFunctionEnabled: "- Delete function is now enabled.",
-			deleteFunctionDisabled: "- Delete function is now disabled.",
-			successAdd: "- Successfully added \"{word}\" with response: \"{response}\".",
-			failedAdd: "- The response \"{response}\" already exists for \"{word}\".",
-			successDelete: "- Successfully deleted the response \"{response}\" for \"{word}\".",
-			failedDelete: "- The response \"{response}\" does not exist for \"{word}\".",
-			successDeleteAll: "- Successfully deleted all responses for \"{word}\".",
-			notFound: "- \"{word}\" not found in responses.",
-			invalidCommand: "- Invalid command. Please use 'leave', 'enable/disable', 'add', or 'delete'."
-		},
-		ar: {
-			successLeave: "- البوت غادر المجموعة بنجاح",
-			failedLeave: "- فشل البوت في مغادرة المجموعة",
-			chatEnabled: "- تم تفعيل وضع المحادثة.",
-			chatDisabled: "- تم إيقاف وضع المحادثة.",
-			addFunctionEnabled: "- تم تفعيل وظيفة الإضافة.",
-			addFunctionDisabled: "- تم إيقاف وظيفة الإضافة.",
-			deleteFunctionEnabled: "- تم تفعيل وظيفة الحذف.",
-			deleteFunctionDisabled: "- تم إيقاف وظيفة الحذف.",
-			successAdd: "- تم إضافة \"{word}\" مع الرد: \"{response}\" بنجاح.",
-			failedAdd: "- الرد \"{response}\" موجود بالفعل للكلمة \"{word}\".",
-			successDelete: "- تم حذف الرد \"{response}\" من الكلمة \"{word}\" بنجاح.",
-			failedDelete: "- الرد \"{response}\" غير موجود في الكلمة \"{word}\".",
-			successDeleteAll: "- تم حذف جميع الردود للكلمة \"{word}\" بنجاح.",
-			notFound: "- الكلمة \"{word}\" غير موجودة في الردود.",
-			invalidCommand: "- أمر غير صالح. يرجى استخدام 'غادر'، 'تشغيل/إيقاف'، 'إضافة'، أو 'مسح'."
-		}
-	},
+  langs: {
+    ar: {
+      addFunctionEnabled: "تم تفعيل وظيفة الإضافة.",
+      addFunctionDisabled: "تم تعطيل وظيفة الإضافة.",
+      delFunctionEnabled: "تم تفعيل وظيفة الحذف.",
+      delFunctionDisabled: "تم تعطيل وظيفة الحذف.",
+      noPermission: "أنت غير مخول لاستخدام هذه الوظيفة!",
+      enterMessage: "يرجى كتابة رسالة...",
+      errorOccurred: "حدث خطأ أثناء معالجة الطلب.",
+    }
+  },
 
-	onLoad: () => {
-		if (!fs.existsSync(DATA_FILE)) {
-			fs.writeFileSync(DATA_FILE, JSON.stringify({ responses: {} }, null, 4), "utf-8");
-		}
-	},
+  onStart: function () {
+    const DATA_FILE = path.join(__dirname, "H.json");
+    if (!fs.existsSync(DATA_FILE)) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify({ responses: {} }, null, 4), "utf-8");
+    }
+  },
 
-	onStart: () => {
-		// تأكد من أن global.config موجود
-		if (!global.config) {
-			global.config = {};
-		}
+  handleEvent: ({ event, api }) => {
+    const { threadID, messageID, body } = event;
+    if (!global.ENABLE_CHAT || !body) return;
 
-		// تعيين القيم للخصائص
-		global.ENABLE_CHAT = true;
-		global.config.ADD_FUNCTION = false;
-		global.config.DEL_FUNCTION = false;
-	},
+    const content = body.toLowerCase();
+    try {
+      const dataJson = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+      const responses = dataJson.responses || {};
+      let respond = responses[content];
 
-	handleEvent: ({ event, api }) => {
-		const { threadID, messageID, body } = event;
-		if (!global.ENABLE_CHAT || !body) return;
+      if (Array.isArray(respond)) {
+        respond = respond[Math.floor(Math.random() * respond.length)];
+      }
 
-		const content = body.toLowerCase();
-		try {
-			const dataJson = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-			const responses = dataJson.responses || {};
-			let respond = responses[content];
+      api.sendMessage(respond || "", threadID, messageID);
+    } catch (error) {
+      console.error(error);
+      api.sendMessage("حدث خطأ أثناء معالجة الطلب.", threadID, messageID);
+    }
+  },
 
-			if (Array.isArray(respond)) {
-				respond = respond[Math.floor(Math.random() * respond.length)];
-			}
+  run: ({ event, api, args, permssion }) => {
+    const { threadID, messageID } = event;
+    const content = args.join(" ").trim().toLowerCase();
 
-			api.sendMessage(respond || "", threadID, messageID);
-		} catch (error) {
-			console.error(error);
-			api.sendMessage("حدث خطأ أثناء معالجة الطلب.", threadID, messageID);
-		}
-	},
+    if (args[0] === "تشغيل" || args[0] === "إيقاف") {
+      if (permssion == 0) return api.sendMessage("أنت غير مخول لاستخدام هذه الوظيفة!", threadID, messageID);
 
-	run: async ({ event, api, args, permssion, getLang }) => {
-		const { threadID, messageID } = event;
-		const command = args[0]?.toLowerCase();
-		const content = args.slice(1).join(" ").trim().toLowerCase();
+      global.ENABLE_CHAT = args[0] === "تشغيل";
+      return api.sendMessage(`تم ${global.ENABLE_CHAT ? "تفعيل" : "إيقاف"} وضع التحدث مع البوت.`, threadID, messageID);
+    }
 
-		if (command === "غادر") {
-			if (permssion === 0) {
-				return api.sendMessage(getLang('invalidCommand'), threadID, messageID);
-			}
+    if (!content) return api.sendMessage("يرجى كتابة رسالة...", threadID, messageID);
 
-			try {
-				await api.removeUserFromGroup(api.getCurrentUserID(), threadID);
-				return api.sendMessage(getLang('successLeave'), threadID, messageID);
-			} catch (error) {
-				console.error(error);
-				return api.sendMessage(getLang('failedLeave'), threadID, messageID);
-			}
-		}
+    try {
+      const dataJson = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+      const responses = dataJson.responses || {};
+      let respond = "";
 
-		if (command === "تشغيل" || command === "إيقاف") {
-			if (permssion === 0) {
-				return api.sendMessage(getLang('invalidCommand'), threadID, messageID);
-			}
+      if (content.startsWith("إضافة = ")) {
+        if (permssion == 0) return api.sendMessage("أنت غير مخول لاستخدام وظيفة الإضافة!", threadID, messageID);
 
-			global.ENABLE_CHAT = command === "تشغيل";
-			return api.sendMessage(getLang(global.ENABLE_CHAT ? 'chatEnabled' : 'chatDisabled'), threadID, messageID);
-		}
+        const switchCase = content.substring(8).toLowerCase();
+        global.config.ADD_FUNCTION = switchCase === "تشغيل";
+        respond = `تم ${global.config.ADD_FUNCTION ? "تفعيل" : "تعطيل"} وظيفة الإضافة.`;
+      } else if (content.startsWith("مسح = ")) {
+        if (permssion == 0) return api.sendMessage("أنت غير مخول لاستخدام وظيفة الحذف.", threadID, messageID);
 
-		if (command === "إضافة") {
-			if (!global.config.ADD_FUNCTION) {
-				return api.sendMessage(getLang('addFunctionDisabled'), threadID, messageID);
-			}
+        const switchCase = content.substring(6).toLowerCase();
+        global.config.DEL_FUNCTION = switchCase === "تشغيل";
+        respond = `تم ${global.config.DEL_FUNCTION ? "تفعيل" : "تعطيل"} وظيفة الحذف.`;
+      } else if (content.includes("=!")) {
+        if (!global.config.DEL_FUNCTION) return api.sendMessage("وظيفة الحذف معطلة حاليًا.", threadID, messageID);
 
-			const [word, ...responseArray] = content.split("=>").map(item => item.trim());
-			const response = responseArray.join("=>").trim();
-			const lowercaseWord = word.toLowerCase();
+        const [word, response] = content.split("=!").map(item => item.trim());
+        const lowercaseWord = word.toLowerCase();
 
-			if (word && response) {
-				const dataJson = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-				const responses = dataJson.responses || {};
-				responses[lowercaseWord] = responses[lowercaseWord] || [];
-				if (!responses[lowercaseWord].includes(response)) {
-					responses[lowercaseWord].push(response);
-					fs.writeFileSync(DATA_FILE, JSON.stringify(dataJson, null, 4), "utf-8");
-					return api.sendMessage(getLang('successAdd', { word, response }), threadID, messageID);
-				} else {
-					return api.sendMessage(getLang('failedAdd', { word, response }), threadID, messageID);
-				}
-			}
-		}
+        if (responses[lowercaseWord]) {
+          if (response) {
+            const index = responses[lowercaseWord].indexOf(response);
+            if (index !== -1) {
+              responses[lowercaseWord].splice(index, 1);
+              if (responses[lowercaseWord].length === 0) delete responses[lowercaseWord];
+              respond = `تم حذف الرد "${response}" من الكلمة "${word}" بنجاح.`;
+            } else {
+              respond = `الرد "${response}" غير موجود في الكلمة "${word}".`;
+            }
+          } else {
+            delete responses[lowercaseWord];
+            respond = `تم حذف جميع الردود للكلمة "${word}" بنجاح.`;
+          }
+        } else {
+          respond = `الكلمة "${word}" غير موجودة في الردود.`;
+        }
+      } else if (content.includes("=>")) {
+        if (!global.config.ADD_FUNCTION) return api.sendMessage("وظيفة الإضافة معطلة حاليًا.", threadID, messageID);
 
-		if (command === "مسح") {
-			if (!global.config.DEL_FUNCTION) {
-				return api.sendMessage(getLang('deleteFunctionDisabled'), threadID, messageID);
-			}
+        const [word, ...responseArray] = content.split("=>").map(item => item.trim());
+        const response = responseArray.join("=>").trim();
+        const lowercaseWord = word.toLowerCase();
 
-			const [word, response] = content.split("=!").map(item => item.trim());
-			const lowercaseWord = word.toLowerCase();
-			const dataJson = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-			const responses = dataJson.responses || {};
+        if (word && response) {
+          responses[lowercaseWord] = responses[lowercaseWord] || [];
+          if (!responses[lowercaseWord].includes(response)) {
+            responses[lowercaseWord].push(response);
+            respond = `تمت إضافة "${word}" ككلمة جديدة مع الرد: "${response}".`;
+          } else {
+            respond = `الرد "${response}" موجود بالفعل للكلمة "${word}".`;
+          }
+        }
+      } else {
+        respond = responses[content];
+        if (Array.isArray(respond)) {
+          respond = respond[Math.floor(Math.random() * respond.length)];
+        }
+      }
 
-			if (responses[lowercaseWord]) {
-				if (response) {
-					const index = responses[lowercaseWord].indexOf(response);
-					if (index !== -1) {
-						responses[lowercaseWord].splice(index, 1);
-						if (responses[lowercaseWord].length === 0) delete responses[lowercaseWord];
-						fs.writeFileSync(DATA_FILE, JSON.stringify(dataJson, null, 4), "utf-8");
-						return api.sendMessage(getLang('successDelete', { word, response }), threadID, messageID);
-					} else {
-						return api.sendMessage(getLang('failedDelete', { word, response }), threadID, messageID);
-					}
-				} else {
-					delete responses[lowercaseWord];
-					fs.writeFileSync(DATA_FILE, JSON.stringify(dataJson, null, 4), "utf-8");
-					return api.sendMessage(getLang('successDeleteAll', { word }), threadID, messageID);
-				}
-			} else {
-				return api.sendMessage(getLang('notFound', { word }), threadID, messageID);
-			}
-		}
+      api.sendMessage(respond || "", threadID, messageID);
 
-		return api.sendMessage(getLang('invalidCommand'), threadID, messageID);
-	}
+      dataJson.responses = responses;
+      fs.writeFileSync(DATA_FILE, JSON.stringify(dataJson, null, 4), "utf-8");
+    } catch (error) {
+      console.error(error);
+      api.sendMessage("حدث خطأ أثناء معالجة الطلب.", threadID, messageID);
+    }
+  }
 };
