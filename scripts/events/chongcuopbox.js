@@ -4,6 +4,7 @@ module.exports.config = {
   version: "1.0.0",
   credits: "D-Jukie",
   description: "Ngăn chặn việc thay đổi admin",
+  category: "events",
 };
 
 module.exports.run = async function ({ event, api, Threads, Users }) {
