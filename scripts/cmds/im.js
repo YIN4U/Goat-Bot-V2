@@ -16,7 +16,8 @@ module.exports = {
     longDescription: {
       vi: "Nhận quà hàng ngày",
       en: "Generate images using Emi"
-    }
+    },
+    category: "game",
   },
 
   translateToEnglish: async function (text) {
