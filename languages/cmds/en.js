@@ -1,113 +1,113 @@
 module.exports = {
-	// You can customize the language here or directly in the command files
+	// يمكنك تخصيص اللغة هنا أو مباشرة في ملفات الأوامر
 	onlyadminbox: {
-		description: "turn on/off only admin box can use bot",
-		guide: "   {pn} [on | off]",
+		description: "تشغيل/إيقاف وضع المسؤول فقط لاستخدام البوت",
+		guide: "   {pn} [تشغيل | إيقاف]",
 		text: {
-			turnedOn: "Turned on the mode only admin of group can use bot",
-			turnedOff: "Turned off the mode only admin of group can use bot",
-			syntaxError: "Syntax error, only use {pn} on or {pn} off"
+			turnedOn: "تم تشغيل وضع المسؤول فقط لاستخدام البوت",
+			turnedOff: "تم إيقاف وضع المسؤول فقط لاستخدام البوت",
+			syntaxError: "خطأ في الصياغة، استخدم {pn} تشغيل أو {pn} إيقاف فقط"
 		}
 	},
 	adduser: {
-		description: "Add user to box chat of you",
-		guide: "   {pn} [link profile | uid]",
+		description: "إضافة مستخدم إلى صندوق الدردشة",
+		guide: "   {pn} [رابط الملف الشخصي | uid]",
 		text: {
-			alreadyInGroup: "Already in group",
-			successAdd: "- Successfully added %1 members to the group",
-			failedAdd: "- Failed to add %1 members to the group",
-			approve: "- Added %1 members to the approval list",
-			invalidLink: "Please enter a valid facebook link",
-			cannotGetUid: "Cannot get uid of this user",
-			linkNotExist: "This profile url does not exist",
-			cannotAddUser: "Bot is blocked or this user blocked strangers from adding to the group"
+			alreadyInGroup: "المستخدم موجود بالفعل في المجموعة",
+			successAdd: "- تم إضافة %1 أعضاء بنجاح إلى المجموعة",
+			failedAdd: "- فشل في إضافة %1 أعضاء إلى المجموعة",
+			approve: "- تم إضافة %1 أعضاء إلى قائمة الموافقة",
+			invalidLink: "يرجى إدخال رابط فيسبوك صالح",
+			cannotGetUid: "لا يمكن الحصول على uid لهذا المستخدم",
+			linkNotExist: "رابط الملف الشخصي غير موجود",
+			cannotAddUser: "البوت محظور أو هذا المستخدم منع الغرباء من إضافته إلى المجموعة"
 		}
 	},
 	admin: {
-		description: "Add, remove, edit admin role",
-		guide: "   {pn} [add | -a] <uid>: Add admin role for user\n\t  {pn} [remove | -r] <uid>: Remove admin role of user\n\t  {pn} [list | -l]: List all admins",
+		description: "إضافة، إزالة، تحرير دور المسؤول",
+		guide: "   {pn} [add | -a] <uid>: إضافة دور المسؤول للمستخدم\n\t  {pn} [remove | -r] <uid>: إزالة دور المسؤول للمستخدم\n\t  {pn} [list | -l]: عرض جميع المسؤولين",
 		text: {
-			added: "✅ | Added admin role for %1 users:\n%2",
-			alreadyAdmin: "\n⚠️ | %1 users already have admin role:\n%2",
-			missingIdAdd: "⚠️ | Please enter ID or tag user to add admin role",
-			removed: "✅ | Removed admin role of %1 users:\n%2",
-			notAdmin: "⚠️ | %1 users don't have admin role:\n%2",
-			missingIdRemove: "⚠️ | Please enter ID or tag user to remove admin role",
-			listAdmin: "👑 | List of admins:\n%1"
+			added: "✅ | تم إضافة دور المسؤول لـ %1 مستخدمين:\n%2",
+			alreadyAdmin: "\n⚠️ | %1 مستخدمين لديهم دور المسؤول بالفعل:\n%2",
+			missingIdAdd: "⚠️ | يرجى إدخال ID أو الإشارة إلى المستخدم لإضافة دور المسؤول",
+			removed: "✅ | تم إزالة دور المسؤول من %1 مستخدمين:\n%2",
+			notAdmin: "⚠️ | %1 مستخدمين لا يملكون دور المسؤول:\n%2",
+			missingIdRemove: "⚠️ | يرجى إدخال ID أو الإشارة إلى المستخدم لإزالة دور المسؤول",
+			listAdmin: "👑 | قائمة المسؤولين:\n%1"
 		}
 	},
 	adminonly: {
-		description: "turn on/off only admin can use bot",
-		guide: "{pn} [on | off]",
+		description: "تشغيل/إيقاف وضع المسؤول فقط لاستخدام البوت",
+		guide: "{pn} [تشغيل | إيقاف]",
 		text: {
-			turnedOn: "Turned on the mode only admin can use bot",
-			turnedOff: "Turned off the mode only admin can use bot",
-			syntaxError: "Syntax error, only use {pn} on or {pn} off"
+			turnedOn: "تم تشغيل وضع المسؤول فقط لاستخدام البوت",
+			turnedOff: "تم إيقاف وضع المسؤول فقط لاستخدام البوت",
+			syntaxError: "خطأ في الصياغة، استخدم {pn} تشغيل أو {pn} إيقاف فقط"
 		}
 	},
 	all: {
-		description: "Tag all members in your group chat",
-		guide: "{pn} [content | empty]"
+		description: "الإشارة إلى جميع الأعضاء في مجموعة الدردشة",
+		guide: "{pn} [المحتوى | فارغ]"
 	},
 	anime: {
-		description: "random anime image",
-		guide: "{pn} <endpoint>\n   List of endpoint: neko, kitsune, hug, pat, waifu, cry, kiss, slap, smug, punch",
+		description: "صورة عشوائية لأنمي",
+		guide: "{pn} <endpoint>\n   قائمة النهايات: neko, kitsune, hug, pat, waifu, cry, kiss, slap, smug, punch",
 		text: {
-			loading: "Initializing image, please wait...",
-			error: "An error occurred, please try again later"
+			loading: "جاري تهيئة الصورة، يرجى الانتظار...",
+			error: "حدث خطأ، يرجى المحاولة لاحقًا"
 		}
 	},
 	antichangeinfobox: {
-		description: "Turn on/off anti change info box",
-		guide: "   {pn} avt [on | off]: anti change avatar box chat\n   {pn} name [on | off]: anti change name box chat\n   {pn} theme [on | off]: anti change theme (chủ đề) box chat\n   {pn} emoji [on | off]: anti change emoji box chat",
+		description: "تشغيل/إيقاف منع تغيير معلومات الصندوق",
+		guide: "   {pn} avt [تشغيل | إيقاف]: منع تغيير صورة صندوق الدردشة\n   {pn} name [تشغيل | إيقاف]: منع تغيير اسم صندوق الدردشة\n   {pn} theme [تشغيل | إيقاف]: منع تغيير موضوع (ثيم) صندوق الدردشة\n   {pn} emoji [تشغيل | إيقاف]: منع تغيير الإيموجي لصندوق الدردشة",
 		text: {
-			antiChangeAvatarOn: "Turn on anti change avatar box chat",
-			antiChangeAvatarOff: "Turn off anti change avatar box chat",
-			missingAvt: "You have not set avatar for box chat",
-			antiChangeNameOn: "Turn on anti change name box chat",
-			antiChangeNameOff: "Turn off anti change name box chat",
-			antiChangeThemeOn: "Turn on anti change theme box chat",
-			antiChangeThemeOff: "Turn off anti change theme box chat",
-			antiChangeEmojiOn: "Turn on anti change emoji box chat",
-			antiChangeEmojiOff: "Turn off anti change emoji box chat",
-			antiChangeAvatarAlreadyOn: "Your box chat is currently on anti change avatar",
-			antiChangeNameAlreadyOn: "Your box chat is currently on anti change name",
-			antiChangeThemeAlreadyOn: "Your box chat is currently on anti change theme",
-			antiChangeEmojiAlreadyOn: "Your box chat is currently on anti change emoji"
+			antiChangeAvatarOn: "تم تشغيل منع تغيير صورة صندوق الدردشة",
+			antiChangeAvatarOff: "تم إيقاف منع تغيير صورة صندوق الدردشة",
+			missingAvt: "لم تقم بتعيين صورة لصندوق الدردشة",
+			antiChangeNameOn: "تم تشغيل منع تغيير اسم صندوق الدردشة",
+			antiChangeNameOff: "تم إيقاف منع تغيير اسم صندوق الدردشة",
+			antiChangeThemeOn: "تم تشغيل منع تغيير موضوع صندوق الدردشة",
+			antiChangeThemeOff: "تم إيقاف منع تغيير موضوع صندوق الدردشة",
+			antiChangeEmojiOn: "تم تشغيل منع تغيير الإيموجي لصندوق الدردشة",
+			antiChangeEmojiOff: "تم إيقاف منع تغيير الإيموجي لصندوق الدردشة",
+			antiChangeAvatarAlreadyOn: "صندوق الدردشة الخاص بك في وضع منع تغيير الصورة حاليًا",
+			antiChangeNameAlreadyOn: "صندوق الدردشة الخاص بك في وضع منع تغيير الاسم حاليًا",
+			antiChangeThemeAlreadyOn: "صندوق الدردشة الخاص بك في وضع منع تغيير الموضوع حاليًا",
+			antiChangeEmojiAlreadyOn: "صندوق الدردشة الخاص بك في وضع منع تغيير الإيموجي حاليًا"
 		}
 	},
 	appstore: {
-		description: "Search app on appstore",
+		description: "البحث عن تطبيق على متجر التطبيقات",
 		text: {
-			missingKeyword: "You haven't entered any keyword",
-			noResult: "No result found for keyword %1"
+			missingKeyword: "لم تقم بإدخال أي كلمة مفتاحية",
+			noResult: "لم يتم العثور على نتائج للكلمة المفتاحية %1"
 		}
 	},
 	autosetname: {
-		description: "Auto change nickname of new member",
-		guide: "   {pn} set <nickname>: use to set config to auto change nickname, with some shortcuts:\n   + {userName}: name of new member\n   + {userID}: member id\n   Example:\n    {pn} set {userName} 🚀\n\n   {pn} [on | off]: use to turn on/off this feature\n\n   {pn} [view | info]: show current config",
+		description: "تغيير تلقائي لاسم العضو الجديد",
+		guide: "   {pn} set <الاسم المستعار>: استخدام لتعيين التكوين لتغيير الاسم تلقائيًا، مع بعض الاختصارات:\n   + {userName}: اسم العضو الجديد\n   + {userID}: معرّف العضو\n   مثال:\n    {pn} set {userName} 🚀\n\n   {pn} [تشغيل | إيقاف]: استخدم لتشغيل/إيقاف هذه الميزة\n\n   {pn} [عرض | معلومات]: عرض التكوين الحالي",
 		text: {
-			missingConfig: "Please enter the required configuration",
-			configSuccess: "The configuration has been set successfully",
-			currentConfig: "The current autoSetName configuration in your chat group is:\n%1",
-			notSetConfig: "Your group has not set the autoSetName configuration",
-			syntaxError: "Syntax error, only \"{pn} on\" or \"{pn} off\" can be used",
-			turnOnSuccess: "The autoSetName feature has been turned on",
-			turnOffSuccess: "The autoSetName feature has been turned off",
-			error: "An error occurred while using the autoSetName feature, try turning off the invite link feature in the group and try again later"
+			missingConfig: "يرجى إدخال التكوين المطلوب",
+			configSuccess: "تم تعيين التكوين بنجاح",
+			currentConfig: "تكوين AutoSetName الحالي في مجموعة الدردشة الخاصة بك هو:\n%1",
+			notSetConfig: "لم تقم مجموعتك بتعيين تكوين AutoSetName",
+			syntaxError: "خطأ في الصياغة، استخدم فقط \"{pn} تشغيل\" أو \"{pn} إيقاف\"",
+			turnOnSuccess: "تم تشغيل ميزة AutoSetName",
+			turnOffSuccess: "تم إيقاف ميزة AutoSetName",
+			error: "حدث خطأ أثناء استخدام ميزة AutoSetName، حاول إيقاف تشغيل ميزة رابط الدعوة في المجموعة وحاول مرة أخرى لاحقًا"
 		}
 	},
 	avatar: {
-		description: "create anime avatar with signature",
-		guide: "{p}{n} <character id or character name> | <background text> | <signature> | <background color name or hex color>\n{p}{n} help: view how to use this command",
+		description: "إنشاء صورة رمزية لأنمي بتوقيع",
+		guide: "{p}{n} <معرف الشخصية أو اسم الشخصية> | <نص الخلفية> | <التوقيع> | <اسم لون الخلفية أو رمز اللون السداسي>\n{p}{n} help: عرض كيفية استخدام هذا الأمر",
 		text: {
-			initImage: "Initializing image, please wait...",
-			invalidCharacter: "Currently there are only %1 characters on the system, please enter a character id less than",
-			notFoundCharacter: "No character named %1 was found in the character list",
-			errorGetCharacter: "An error occurred while getting character data:\n%1: %2",
-			success: "✅ Your avatar\nCharacter: %1\nID: %2\nBackground text: %3\nSignature: %4\nColor: %5",
-			defaultColor: "default",
-			error: "An error occurred\n%1: %2"
+			initImage: "جاري تهيئة الصورة، يرجى الانتظار...",
+			invalidCharacter: "حاليًا يوجد %1 شخصية فقط في النظام، يرجى إدخال معرف الشخصية أقل من",
+			notFoundCharacter: "لم يتم العثور على أي شخصية باسم %1 في قائمة الشخصيات",
+			errorGetCharacter: "حدث خطأ أثناء الحصول على بيانات الشخصية:\n%1: %2",
+			success: "✅ صورتك الرمزية\nالشخصية: %1\nمعرف: %2\nنص الخلفية: %3\nالتوقيع: %4\nاللون: %5",
+			defaultColor: "افتراضي",
+			error: "حدث خطأ\n%1: %2"
 		}
 	},
 	badwords: {
