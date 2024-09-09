@@ -4,7 +4,7 @@ const axios = require('axios');
 
 module.exports = {
   config: {
-    name: "تخيل",
+    name: "تشكيل",
     version: "1.0.0",
     author: "حسين يعقوبي",
     countDown: 5,
