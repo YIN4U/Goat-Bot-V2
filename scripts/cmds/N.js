@@ -32,7 +32,7 @@ module.exports = {
         if (body.startsWith("موسى") || body.startsWith("موسي") || body.startsWith("moussa") || body.startsWith("Test")) {
             const msg = {
                 body: this.langs.en.responseMessage,
-                attachment: fs.createReadStream(__dirname + `/Mou/welcome.jpeg`)
+                attachment: fs.createReadStream(__dirname + `/cache/welcome.jpeg`)
             };
             api.sendMessage(msg, threadID, messageID);
             api.setMessageReaction("😾", messageID, (err) => {}, true);
