@@ -248,7 +248,6 @@ async function handle({ type, infoVideo, message, getLang }) {
 
 		writeStrean.on("finish", () => {
 			message.reply({
-				body: ,
 				attachment: fs.createReadStream(savePath)
 			}, async (err) => {
 				if (err)
