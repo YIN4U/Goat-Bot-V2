@@ -17,15 +17,14 @@ module.exports = {
         },
         category: "rank",
         guide: {
-            vi: "   [từ khóa]",
-            en: "   [keyword]"
+            vi: "   {pn} [từ khóa]",
+            en: "   {pn} [keyword]"
         },
         envConfig: {
             deltaNext: 5
         }
     },
 
-    // تنفيذ الأمر بدون بادئة
     onStart: async function ({ message, args }) {
         const keyword = args[0]; // الكلمة المحددة من المستخدم
         const imagePath = imagePaths[keyword]; // الحصول على مسار الصورة بناءً على الكلمة
