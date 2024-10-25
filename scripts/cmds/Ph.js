@@ -1,42 +1,59 @@
-const fs = require("fs");
-const path = require("path");
-
-// قراءة مسارات الصور من ملف JSON
-const imagePaths = JSON.parse(fs.readFileSync(path.join(__dirname, "images.json"), "utf-8"));
+const fs = require('fs');
 
 module.exports = {
-    config: {
-        name: "phh",
-        version: "1.7",
-        author: "NTKhang",
-        countDown: 5,
-        role: 0,
-        description: {
-            vi: "Xem level của bạn hoặc người được tag. Có thể tag nhiều người",
-            en: "View your level or the level of the tagged person. You can tag many people"
-        },
-        category: "rank",
-        guide: {
-            vi: "   {pn} [từ khóa]",
-            en: "   {pn} [keyword]"
-        },
-        envConfig: {
-            deltaNext: 5
-        }
-    },
+  config: {
+    name: "بوت",
+    version: "2.0.0",
+    author: "Haru",
+    cooldown: 5,
+    role: 0,
+    shortDescription: "الرد التلقائي مع ردود الفعل والردود",
+    longDescription: "الرد التلقائي مع ردود الفعل والردود بناءً على كلمات أو مشغلات محددة.",
+    category: "النظام",
+    guide: "©بوت",
+  },
+  onStart: async ({ api, event }) => {
+    // Blank onStart function as per the request
+  },
+  onChat: async ({ api, event }) => {
+    const { body, messageID, threadID } = event;
+    // Reactions based on words
+    const emojis = {
+      "😽": ["مياو"],
+    };
+    // Replies to specific words
+    const replies = {
+      "hi": "hello",
+    };
+    // Images to send based on words
+    const images = {
+      "موسى": "Mou/welcome.jpeg",
+      "dragon": "Mou/dragon.mp3",
+    };
 
-    onStart: async function ({ message, args }) {
-        const keyword = args[0]; // الكلمة المحددة من المستخدم
-        const imagePath = imagePaths[keyword]; // الحصول على مسار الصورة بناءً على الكلمة
-
-        // تحقق من وجود الصورة قبل إرسالها
-        if (imagePath && fs.existsSync(imagePath)) {
-            return message.reply({
-                body: "إليك الصورة المحددة:",
-                attachment: fs.createReadStream(imagePath)
-            });
-        } else {
-            return message.reply("لم يتم العثور على الصورة أو الكلمة المحددة غير صحيحة.");
+    // React based on words
+    for (const [emoji, words] of Object.entries(emojis)) {
+      for (const word of words) {
+        if (body.toLowerCase().includes(word)) {
+          api.setMessageReaction(emoji, messageID, () => {}, true);
         }
+      }
     }
+    // Reply based on triggers
+    for (const [trigger, reply] of Object.entries(replies)) {
+      if (body.toLowerCase().includes(trigger)) {
+        api.sendMessage(reply, threadID, messageID);
+      }
+    }
+    // Send image based on words
+    for (const [trigger, imagePath] of Object.entries(images)) {
+      if (body.toLowerCase().includes(trigger)) {
+        const imageBuffer = fs.readFileSync(imagePath);
+        api.sendMessage({
+          body: "",
+          attachment: fs.createReadStream(imagePath)
+        }, threadID, messageID);
+      }
+    }
+  },
 };
