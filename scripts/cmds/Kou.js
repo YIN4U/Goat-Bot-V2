@@ -3,7 +3,7 @@ const path = require("path");
 
 module.exports = {
     config: {
-        name: "rank",
+        name: "صورة",
         version: "1.7",
         author: "NTKhang",
         countDown: 5,
@@ -24,7 +24,7 @@ module.exports = {
 
     onStart: async function ({ message }) {
         // تحديد مسار الصورة الثابتة
-        const imagePath = path.join(__dirname, "assets", "fixed-image.png");
+        const imagePath = path.join(__dirname, "Mou", "welcome.jpeg");
 
         // تحقق من وجود الصورة قبل إرسالها
         if (fs.existsSync(imagePath)) {
