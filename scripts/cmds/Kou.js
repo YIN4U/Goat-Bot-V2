@@ -1,63 +1,39 @@
-const axios = require("axios");
 const fs = require("fs");
+const path = require("path");
 
 module.exports = {
     config: {
-        name: "sendImage", // اسم الأمر
-        version: "1.0",
-        author: "YourName",
+        name: "rank",
+        version: "1.7",
+        author: "NTKhang",
         countDown: 5,
         role: 0,
-        shortDescription: {
-            ar: "إرسال صورة"
-        },
         description: {
-            ar: "هذا الأمر يقوم بإرسال صورة"
+            vi: "Xem level của bạn hoặc người được tag. Có thể tag nhiều người",
+            en: "View your level or the level of the tagged person. You can tag many people"
         },
-        category: "media",
+        category: "rank",
         guide: {
-            ar: "سيتم إرسال الصورة مع نص عند كتابة كلمة 'صورة' فقط"
+            vi: "   {pn} [để trống | @tags]",
+            en: "   {pn} [empty | @tags]"
+        },
+        envConfig: {
+            deltaNext: 5
         }
     },
 
-    langs: {
-        ar: {
-            sendingImage: "جاري إرسال الصورة...",
-            imageMessage: "⚜️|تم إرسال الصورة بنجاح!|⚜️"
-        }
-    },
+    onStart: async function ({ message }) {
+        // تحديد مسار الصورة الثابتة
+        const imagePath = path.join(__dirname, "assets", "fixed-image.png");
 
-    onStart: async function ({ api, message, getLang }) {
-        // التحقق من وجود message.body قبل محاولة استخدامه
-        if (message.body && message.body.trim().toLowerCase() === "صورة") {
-            // قم بإرسال رسالة تنبيه
-            message.reply(getLang("sendingImage"));
-
-            // رابط الصورة التي تريد إرسالها
-            const imageUrl = "https://i.postimg.cc/HWMsNNCk/dbc80b0bdfdebce4a5efc7a989aa9b9a.jpg";
-
-            // تحميل الصورة وإرسالها
-            const downloadImage = async (url, filePath) => {
-                const response = await axios({
-                    url,
-                    method: 'GET',
-                    responseType: 'stream'
-                });
-                response.data.pipe(fs.createWriteStream(filePath));
-                return new Promise((resolve, reject) => {
-                    response.data.on('end', () => resolve());
-                    response.data.on('error', err => reject(err));
-                });
-            };
-
-            const filePath = __dirname + "/tmp/image.jpg";
-            await downloadImage(imageUrl, filePath);
-
-            // إرسال الصورة مع نص
-            api.sendMessage({
-                body: getLang("imageMessage"), // نص الرسالة
-                attachment: fs.createReadStream(filePath) // ملحق الصورة
-            }, message.threadID);
+        // تحقق من وجود الصورة قبل إرسالها
+        if (fs.existsSync(imagePath)) {
+            return message.reply({
+                body: "إليك الصورة المحددة من المسار الثابت.",
+                attachment: fs.createReadStream(imagePath)
+            });
+        } else {
+            return message.reply("لم يتم العثور على الصورة في المسار المحدد.");
         }
     }
 };
