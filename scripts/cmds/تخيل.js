@@ -9,7 +9,7 @@ module.exports = {
     role: 0, // متوافق مع نظام GoatBot، بدلاً من hasPermission
     credits: "jameslim",
     description: "Generate image from pollination",
-    commandCategory: "image",
+    category: "image",
     guide: "{pn} [query]", // دليل الاستخدام
     cooldown: 2, // بدلاً من cooldowns
   },
