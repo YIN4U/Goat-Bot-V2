@@ -1,6 +1,7 @@
 const axios = require("axios");
 const ytdl = require("@distube/ytdl-core");
 const fs = require("fs-extra");
+const { getStreamFromURL, downloadFile, formatNumber } = global.utils;
 
 async function getStreamAndSize(url, path = "") {
 	const response = await axios({
@@ -21,124 +22,102 @@ async function getStreamAndSize(url, path = "") {
 
 module.exports = {
 	config: {
-		name: "شغل",
+		name: "play",
 		version: "1.16",
 		author: "NTKhang",
 		countDown: 5,
 		role: 0,
 		description: {
-			en: "Download video or audio from YouTube"
+			vi: "Tải video, audio hoặc xem thông tin video trên YouTube",
+			en: "Download video, audio or view video information on YouTube"
 		},
 		category: "media",
 		guide: {
-			en: "   {pn} [video|-v] [<video name or link>]: use to download video from YouTube."
-				+ "\n   {pn} [audio|-a] [<video name or link>]: use to download audio from YouTube"
+			vi: "   {pn} [video|-v] [<tên video>|<link video>]: dùng để tải video từ youtube."
+				+ "\n   {pn} [audio|-a] [<tên video>|<link video>]: dùng để tải audio từ youtube"
+				+ "\n   {pn} [info|-i] [<tên video>|<link video>]: dùng để xem thông tin video từ youtube"
+				+ "\n   Ví dụ:"
+				+ "\n    {pn} -v Fallen Kingdom"
+				+ "\n    {pn} -a Fallen Kingdom"
+				+ "\n    {pn} -i Fallen Kingdom",
+			en: "   {pn} [video|-v] [<video name>|<video link>]: use to download video from youtube."
+				+ "\n   {pn} [audio|-a] [<video name>|<video link>]: use to download audio from youtube"
+				+ "\n   {pn} [info|-i] [<video name>|<video link>]: use to view video information from youtube"
+				+ "\n   Example:"
+				+ "\n    {pn} -v Fallen Kingdom"
+				+ "\n    {pn} -a Fallen Kingdom"
+				+ "\n    {pn} -i Fallen Kingdom"
 		}
 	},
 
-	onStart: async function ({ args, message }) {
-		let type;
-		switch (args[0]) {
-			case "-v":
-			case "video":
-				type = "video";
-				break;
-			case "-a":
-			case "audio":
-				type = "audio";
-				break;
-			default:
-				return message.SyntaxError();
-		}
-
-		const checkurl = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})(?:\S+)?$/;
-		const urlYtb = checkurl.test(args[1]);
-
-		if (urlYtb) {
-			const videoId = extractVideoId(args[1]);
-			handle({ type, videoId, message });
+	onReply: async ({ event, api, Reply, message, getLang }) => {
+		const { result, type } = Reply;
+		const choice = event.body;
+		if (!isNaN(choice) && choice <= 6) {
+			const infoChoice = result[choice - 1];
+			const idvideo = infoChoice.id;
+			const infoVideo = await getVideoInfo(idvideo);
+			api.unsendMessage(Reply.messageID);
+			await handle({ type, infoVideo, message, getLang });
 		} else {
-			const videoId = await searchYouTube(args.slice(1).join(" "));
-			if (videoId) {
-				handle({ type, videoId, message });
-			} else {
-				message.reply("No results found for your query.");
-			}
+			api.unsendMessage(Reply.messageID);
 		}
 	}
 };
 
-async function handle({ type, videoId, message }) {
-	if (type === "video") {
-		const MAX_SIZE = 83 * 1024 * 1024; // 83MB
+async function handle({ type, infoVideo, message, getLang }) {
+	const { title, videoId } = infoVideo;
+
+	if (type == "video") {
+		const MAX_SIZE = 83 * 1024 * 1024; // 83MB (max size of video that can be sent on fb)
+		const msgSend = message.reply(getLang("downloading", getLang("video"), title));
 		const { formats } = await ytdl.getInfo(videoId);
 		const getFormat = formats
-			.filter(f => f.hasVideo && f.hasAudio && f.quality === 'tiny' && f.audioBitrate === 128)
+			.filter(f => f.hasVideo && f.hasAudio && f.quality == 'tiny' && f.audioBitrate == 128)
 			.sort((a, b) => b.contentLength - a.contentLength)
-			.find(f => f.contentLength && f.contentLength < MAX_SIZE);
-		if (!getFormat) return message.reply("No suitable video format found.");
-
+			.find(f => f.contentLength || 0 < MAX_SIZE);
+		if (!getFormat) return message.reply(getLang("noVideo"));
 		const getStream = await getStreamAndSize(getFormat.url, `${videoId}.mp4`);
-		if (getStream.size > MAX_SIZE) return message.reply("Video size exceeds the limit.");
+		if (getStream.size > MAX_SIZE) return message.reply(getLang("noVideo"));
 
 		const savePath = __dirname + `/tmp/${videoId}_${Date.now()}.mp4`;
-		const writeStream = fs.createWriteStream(savePath);
-		getStream.stream.pipe(writeStream);
+		const writeStrean = fs.createWriteStream(savePath);
+		getStream.stream.pipe(writeStrean);
 
-		writeStream.on("finish", () => {
+		writeStrean.on("finish", () => {
 			message.reply({
 				attachment: fs.createReadStream(savePath)
 			}, async (err) => {
-				if (err) return message.reply("Error sending video.");
+				if (err) return message.reply(getLang("error", err.message));
 				fs.unlinkSync(savePath);
+				message.unsend((await msgSend).messageID);
 			});
 		});
-	} else if (type === "audio") {
-		const MAX_SIZE = 27262976; // 26MB
+	}
+	else if (type == "audio") {
+		const MAX_SIZE = 27262976; // 26MB (max size of audio that can be sent on fb)
+		const msgSend = message.reply(getLang("downloading", getLang("audio"), title));
 		const { formats } = await ytdl.getInfo(videoId);
 		const getFormat = formats
 			.filter(f => f.hasAudio && !f.hasVideo)
 			.sort((a, b) => b.contentLength - a.contentLength)
-			.find(f => f.contentLength && f.contentLength < MAX_SIZE);
-		if (!getFormat) return message.reply("No suitable audio format found.");
-
+			.find(f => f.contentLength || 0 < MAX_SIZE);
+		if (!getFormat) return message.reply(getLang("noAudio"));
 		const getStream = await getStreamAndSize(getFormat.url, `${videoId}.mp3`);
-		if (getStream.size > MAX_SIZE) return message.reply("Audio size exceeds the limit.");
+		if (getStream.size > MAX_SIZE) return message.reply(getLang("noAudio"));
 
 		const savePath = __dirname + `/tmp/${videoId}_${Date.now()}.mp3`;
-		const writeStream = fs.createWriteStream(savePath);
-		getStream.stream.pipe(writeStream);
+		const writeStrean = fs.createWriteStream(savePath);
+		getStream.stream.pipe(writeStrean);
 
-		writeStream.on("finish", () => {
+		writeStrean.on("finish", () => {
 			message.reply({
 				attachment: fs.createReadStream(savePath)
 			}, async (err) => {
-				if (err) return message.reply("Error sending audio.");
+				if (err) return message.reply(getLang("error", err.message));
 				fs.unlinkSync(savePath);
+				message.unsend((await msgSend).messageID);
 			});
 		});
 	}
-}
-
-async function searchYouTube(query) {
-	try {
-		const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-		const res = await axios.get(url);
-		const getJson = JSON.parse(res.data.split("ytInitialData = ")[1].split(";</script>")[0]);
-		const videos = getJson.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents[0].itemSectionRenderer.contents;
-
-		for (const video of videos) {
-			if (video.videoRenderer) {
-				return video.videoRenderer.videoId;
-			}
-		}
-		return null;
-	} catch (e) {
-		throw new Error("Cannot search video");
-	}
-}
-
-function extractVideoId(url) {
-	const id = url.split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/|\/shorts\/)/);
-	return id[2] !== undefined ? id[2].split(/[^0-9a-z_\-]/i)[0] : id[0];
 }
