@@ -22,11 +22,14 @@ module.exports = {
     // Reactions based on words
     const emojis = {
       "😽": ["مياو"],
+      "😾":["موسى"],
     };
 
     // Replies to specific words
     const replies = {
       "hi": "hello",
+      "كيفك":"بخير الحمد لله وانت",
+      "موسى":"😾ماذا تريد!؟",
     };
 
     // Images to send based on words
