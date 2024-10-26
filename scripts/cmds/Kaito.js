@@ -1,148 +1,72 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
 module.exports = {
   config: {
-    name: "هارلي",
-    version: "1.1.1",
-    author: "Yin",
-    countDown: 2,
+    name: "بوت",
+    version: "2.0.0",
+    author: "Haru",
+    cooldown: 5,
     role: 0,
-    description: {
-      ar: "ابدأ محادثة مع هارلي",
-      en: "Start a conversation with Harley"
-    },
-    category: "chatbots",
-    guide: {
-      ar: "   {pn} التحدث مع البوت"
-    },
-    usePrefix: true,
-    usages: "التحدث مع البوت",
+    shortDescription: "الرد التلقائي مع ردود الفعل والردود",
+    longDescription: "الرد التلقائي مع ردود الفعل والردود بناءً على كلمات أو مشغلات محددة.",
+    category: "النظام",
+    guide: "©بوت",
   },
-
-  langs: {
-    ar: {
-      addFunctionEnabled: "تم تفعيل وظيفة الإضافة.",
-      addFunctionDisabled: "تم تعطيل وظيفة الإضافة.",
-      delFunctionEnabled: "تم تفعيل وظيفة الحذف.",
-      delFunctionDisabled: "تم تعطيل وظيفة الحذف.",
-      noPermission: "أنت غير مخول لاستخدام هذه الوظيفة!",
-      enterMessage: "يرجى كتابة رسالة...",
-      errorOccurred: "حدث خطأ أثناء معالجة الطلب.",
-    }
+  onStart: async ({ api, event }) => {
+    // Blank onStart function as per the request
   },
+  onChat: async ({ api, event }) => {
+    const { body, messageID, threadID } = event;
 
-  onStart: function () {
-    const DATA_FILE = path.join(__dirname, "H.json");
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify({ responses: {} }, null, 4), "utf-8");
-    }
-  },
+    // Reactions based on words
+    const emojis = {
+      "😽": ["مياو"],
+    };
 
-  handleEvent: ({ event, api }) => {
-    const { threadID, messageID, body } = event;
-    if (!global.ENABLE_CHAT || !body) return;
+    // Replies to specific words
+    const replies = {
+      "hi": "hello",
+    };
 
-    const content = body.toLowerCase();
-    try {
-      const dataJson = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-      const responses = dataJson.responses || {};
-      let respond = responses[content];
+    // Images to send based on words
+    const images = {
+      "موسى": path.join(__dirname, "Mou", "welcome.jpeg"),
+      "dragon": path.join(__dirname, "Mou", "dragon.mp3"),
+    };
 
-      if (Array.isArray(respond)) {
-        respond = respond[Math.floor(Math.random() * respond.length)];
-      }
-
-      api.sendMessage(respond || "", threadID, messageID);
-    } catch (error) {
-      console.error(error);
-      api.sendMessage("حدث خطأ أثناء معالجة الطلب.", threadID, messageID);
-    }
-  },
-
-  run: ({ event, api, args, permssion }) => {
-    const { threadID, messageID } = event;
-    const content = args.join(" ").trim().toLowerCase();
-
-    if (args[0] === "تشغيل" || args[0] === "إيقاف") {
-      if (permssion == 0) return api.sendMessage("أنت غير مخول لاستخدام هذه الوظيفة!", threadID, messageID);
-
-      global.ENABLE_CHAT = args[0] === "تشغيل";
-      return api.sendMessage(`تم ${global.ENABLE_CHAT ? "تفعيل" : "إيقاف"} وضع التحدث مع البوت.`, threadID, messageID);
-    }
-
-    if (!content) return api.sendMessage("يرجى كتابة رسالة...", threadID, messageID);
-
-    try {
-      const dataJson = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-      const responses = dataJson.responses || {};
-      let respond = "";
-
-      if (content.startsWith("إضافة = ")) {
-        if (permssion == 0) return api.sendMessage("أنت غير مخول لاستخدام وظيفة الإضافة!", threadID, messageID);
-
-        const switchCase = content.substring(8).toLowerCase();
-        global.config.ADD_FUNCTION = switchCase === "تشغيل";
-        respond = `تم ${global.config.ADD_FUNCTION ? "تفعيل" : "تعطيل"} وظيفة الإضافة.`;
-      } else if (content.startsWith("مسح = ")) {
-        if (permssion == 0) return api.sendMessage("أنت غير مخول لاستخدام وظيفة الحذف.", threadID, messageID);
-
-        const switchCase = content.substring(6).toLowerCase();
-        global.config.DEL_FUNCTION = switchCase === "تشغيل";
-        respond = `تم ${global.config.DEL_FUNCTION ? "تفعيل" : "تعطيل"} وظيفة الحذف.`;
-      } else if (content.includes("=!")) {
-        if (!global.config.DEL_FUNCTION) return api.sendMessage("وظيفة الحذف معطلة حاليًا.", threadID, messageID);
-
-        const [word, response] = content.split("=!").map(item => item.trim());
-        const lowercaseWord = word.toLowerCase();
-
-        if (responses[lowercaseWord]) {
-          if (response) {
-            const index = responses[lowercaseWord].indexOf(response);
-            if (index !== -1) {
-              responses[lowercaseWord].splice(index, 1);
-              if (responses[lowercaseWord].length === 0) delete responses[lowercaseWord];
-              respond = `تم حذف الرد "${response}" من الكلمة "${word}" بنجاح.`;
-            } else {
-              respond = `الرد "${response}" غير موجود في الكلمة "${word}".`;
-            }
-          } else {
-            delete responses[lowercaseWord];
-            respond = `تم حذف جميع الردود للكلمة "${word}" بنجاح.`;
-          }
-        } else {
-          respond = `الكلمة "${word}" غير موجودة في الردود.`;
-        }
-      } else if (content.includes("=>")) {
-        if (!global.config.ADD_FUNCTION) return api.sendMessage("وظيفة الإضافة معطلة حاليًا.", threadID, messageID);
-
-        const [word, ...responseArray] = content.split("=>").map(item => item.trim());
-        const response = responseArray.join("=>").trim();
-        const lowercaseWord = word.toLowerCase();
-
-        if (word && response) {
-          responses[lowercaseWord] = responses[lowercaseWord] || [];
-          if (!responses[lowercaseWord].includes(response)) {
-            responses[lowercaseWord].push(response);
-            respond = `تمت إضافة "${word}" ككلمة جديدة مع الرد: "${response}".`;
-          } else {
-            respond = `الرد "${response}" موجود بالفعل للكلمة "${word}".`;
-          }
-        }
-      } else {
-        respond = responses[content];
-        if (Array.isArray(respond)) {
-          respond = respond[Math.floor(Math.random() * respond.length)];
+    // React based on words
+    for (const [emoji, words] of Object.entries(emojis)) {
+      for (const word of words) {
+        if (body.toLowerCase().includes(word)) {
+          api.setMessageReaction(emoji, messageID, () => {}, true);
         }
       }
-
-      api.sendMessage(respond || "", threadID, messageID);
-
-      dataJson.responses = responses;
-      fs.writeFileSync(DATA_FILE, JSON.stringify(dataJson, null, 4), "utf-8");
-    } catch (error) {
-      console.error(error);
-      api.sendMessage("حدث خطأ أثناء معالجة الطلب.", threadID, messageID);
     }
-  }
+
+    // Reply based on triggers
+    for (const [trigger, reply] of Object.entries(replies)) {
+      if (body.toLowerCase().includes(trigger)) {
+        api.sendMessage(reply, threadID, messageID);
+      }
+    }
+
+    // Send image based on words
+    for (const [trigger, imagePath] of Object.entries(images)) {
+      if (body.toLowerCase().includes(trigger)) {
+        try {
+          if (fs.existsSync(imagePath)) {
+            api.sendMessage({
+              body: "",
+              attachment: fs.createReadStream(imagePath)
+            }, threadID, messageID);
+          } else {
+            console.error(`Image not found at: ${imagePath}`);
+          }
+        } catch (error) {
+          console.error(`Failed to read image at ${imagePath}:`, error.message);
+        }
+      }
+    }
+  },
 };
