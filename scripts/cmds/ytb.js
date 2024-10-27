@@ -1,9 +1,9 @@
 const axios = require("axios");
 const ytdl = require("@distube/ytdl-core");
 const fs = require("fs-extra");
-const { getStreamFromURL } = global.utils;
+const path = require("path");
 
-async function getStreamAndSize(url, path = "") {
+async function getStreamAndSize(url, filePath = "") {
     const response = await axios({
         method: "GET",
         url,
@@ -12,11 +12,11 @@ async function getStreamAndSize(url, path = "") {
             'Range': 'bytes=0-'
         }
     });
-    if (path) response.data.path = path;
+    if (filePath) response.data.path = filePath;
     const totalLength = response.headers["content-length"];
     return {
         stream: response.data,
-        size: totalLength
+        size: parseInt(totalLength, 10)
     };
 }
 
@@ -60,19 +60,25 @@ module.exports = {
 
 async function handle({ type, infoVideo, message }) {
     const { videoId } = infoVideo;
+    const tmpDir = path.join(__dirname, "tmp");
+    if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir);
+    }
 
-    if (type == "video") {
-        const MAX_SIZE = 83 * 1024 * 1024; // 83MB (max size of video that can be sent on fb)
+    if (type === "video") {
+        const MAX_SIZE = 83 * 1024 * 1024; // 83MB
         const { formats } = await ytdl.getInfo(videoId);
         const getFormat = formats
-            .filter(f => f.hasVideo && f.hasAudio && f.quality == 'tiny' && f.audioBitrate == 128)
+            .filter(f => f.hasVideo && f.hasAudio && f.quality === 'tiny' && f.audioBitrate === 128)
             .sort((a, b) => b.contentLength - a.contentLength)
-            .find(f => f.contentLength || 0 < MAX_SIZE);
+            .find(f => f.contentLength < MAX_SIZE);
         if (!getFormat) return message.reply("لا يمكن تحميل الفيديو المطلوب.");
-        const getStream = await getStreamAndSize(getFormat.url, `${videoId}.mp4`);
+
+        const savePath = path.join(tmpDir, `${videoId}_${Date.now()}.mp4`);
+        const getStream = await getStreamAndSize(getFormat.url, savePath);
+
         if (getStream.size > MAX_SIZE) return message.reply("لا يمكن تحميل الفيديو المطلوب.");
 
-        const savePath = __dirname + `/tmp/${videoId}_${Date.now()}.mp4`;
         const writeStream = fs.createWriteStream(savePath);
         getStream.stream.pipe(writeStream);
 
@@ -81,23 +87,32 @@ async function handle({ type, infoVideo, message }) {
                 body: "هذا طلبك:",
                 attachment: fs.createReadStream(savePath)
             }, async (err) => {
-                if (err) return message.reply("حدث خطأ أثناء إرسال الفيديو.");
+                if (err) {
+                    console.error("Error sending video:", err);
+                    return message.reply("حدث خطأ أثناء إرسال الفيديو.");
+                }
                 fs.unlinkSync(savePath);
             });
         });
-    }
-    else if (type == "audio") {
-        const MAX_SIZE = 26 * 1024 * 1024; // 26MB (max size of audio that can be sent on fb)
+
+        writeStream.on("error", (err) => {
+            console.error("Write stream error:", err);
+            message.reply("حدث خطأ أثناء تحميل الفيديو.");
+        });
+    } else if (type === "audio") {
+        const MAX_SIZE = 26 * 1024 * 1024; // 26MB
         const { formats } = await ytdl.getInfo(videoId);
         const getFormat = formats
             .filter(f => f.hasAudio && !f.hasVideo)
             .sort((a, b) => b.contentLength - a.contentLength)
-            .find(f => f.contentLength || 0 < MAX_SIZE);
+            .find(f => f.contentLength < MAX_SIZE);
         if (!getFormat) return message.reply("لا يمكن تحميل الصوت المطلوب.");
-        const getStream = await getStreamAndSize(getFormat.url, `${videoId}.mp3`);
+
+        const savePath = path.join(tmpDir, `${videoId}_${Date.now()}.mp3`);
+        const getStream = await getStreamAndSize(getFormat.url, savePath);
+
         if (getStream.size > MAX_SIZE) return message.reply("لا يمكن تحميل الصوت المطلوب.");
 
-        const savePath = __dirname + `/tmp/${videoId}_${Date.now()}.mp3`;
         const writeStream = fs.createWriteStream(savePath);
         getStream.stream.pipe(writeStream);
 
@@ -106,9 +121,17 @@ async function handle({ type, infoVideo, message }) {
                 body: "هذا طلبك:",
                 attachment: fs.createReadStream(savePath)
             }, async (err) => {
-                if (err) return message.reply("حدث خطأ أثناء إرسال الصوت.");
+                if (err) {
+                    console.error("Error sending audio:", err);
+                    return message.reply("حدث خطأ أثناء إرسال الصوت.");
+                }
                 fs.unlinkSync(savePath);
             });
+        });
+
+        writeStream.on("error", (err) => {
+            console.error("Write stream error:", err);
+            message.reply("حدث خطأ أثناء تحميل الصوت.");
         });
     }
 }
