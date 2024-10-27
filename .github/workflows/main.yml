@@ -9,5 +9,6 @@ jobs:
       - run: node --version
       - run: npm --version
       - uses: actions/checkout@v4
-      - run: npm install
-      - run: node .
+      - run: npm install @distube/ytdl-core@latest # تحديث المكتبة
+      - run: npm install # تثبيت الاعتمادات الأخرى
+      - run: node . # تشغيل التطبيق
