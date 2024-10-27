@@ -314,72 +314,36 @@ async function search(keyWord) {
 }
 
 async function getVideoInfo(id) {
-	// get id from url if url
-	id = id.replace(/(>|<)/gi, '').split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/|\/shorts\/)/);
-	id = id[2] !== undefined ? id[2].split(/[^0-9a-z_\-]/i)[0] : id[0];
+    // الحصول على id من الرابط إذا كان الرابط
+    id = id.replace(/(>|<)/gi, '').split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/|\/shorts\/)/);
+    id = id[2] !== undefined ? id[2].split(/[^0-9a-z_\-]/i)[0] : id[0];
 
-	const { data: html } = await axios.get(`https://youtu.be/${id}?hl=en`, {
-		headers: {
-			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36'
-		}
-	});
-	const json = JSON.parse(html.match(/var ytInitialPlayerResponse = (.*?});/)[1]);
-	const json2 = JSON.parse(html.match(/var ytInitialData = (.*?});/)[1]);
-	const { title, lengthSeconds, viewCount, videoId, thumbnail, author } = json.videoDetails;
-	let getChapters;
-	try {
-		getChapters = json2.playerOverlays.playerOverlayRenderer.decoratedPlayerBarRenderer.decoratedPlayerBarRenderer.playerBar.multiMarkersPlayerBarRenderer.markersMap.find(x => x.key == "DESCRIPTION_CHAPTERS" && x.value.chapters).value.chapters;
-	}
-	catch (e) {
-		getChapters = [];
-	}
-	const owner = json2.contents.twoColumnWatchNextResults.results.results.contents.find(x => x.videoSecondaryInfoRenderer).videoSecondaryInfoRenderer.owner;
+    const { data: html } = await axios.get(`https://youtu.be/${id}?hl=en`, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36'
+        }
+    });
 
-	const result = {
-		videoId,
-		title,
-		video_url: `https://youtu.be/${videoId}`,
-		lengthSeconds: lengthSeconds.match(/\d+/)[0],
-		viewCount: viewCount.match(/\d+/)[0],
-		uploadDate: json.microformat.playerMicroformatRenderer.uploadDate,
-		// contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.videoActions.menuRenderer.topLevelButtons[0].segmentedLikeDislikeButtonViewModel.likeButtonViewModel.likeButtonViewModel.toggleButtonViewModel.toggleButtonViewModel.defaultButtonViewModel.buttonViewModel.accessibilityText
-		likes: json2.contents.twoColumnWatchNextResults.results.results.contents.find(x => x.videoPrimaryInfoRenderer).videoPrimaryInfoRenderer.videoActions.menuRenderer.topLevelButtons.find(x => x.segmentedLikeDislikeButtonViewModel).segmentedLikeDislikeButtonViewModel.likeButtonViewModel.likeButtonViewModel.toggleButtonViewModel.toggleButtonViewModel.defaultButtonViewModel.buttonViewModel.accessibilityText.replace(/\.|,/g, '').match(/\d+/)?.[0] || 0,
-		chapters: getChapters.map((x, i) => {
-			const start_time = x.chapterRenderer.timeRangeStartMillis;
-			const end_time = getChapters[i + 1]?.chapterRenderer?.timeRangeStartMillis || lengthSeconds.match(/\d+/)[0] * 1000;
+    // حذف سطور جلب المعلومات غير المطلوبة
+    const result = {
+        videoId: id, // يجب التأكد من أن هذا هو ID الفيديو
+        video_url: `https://youtu.be/${id}`
+    };
 
-			return {
-				title: x.chapterRenderer.title.simpleText,
-				start_time_ms: start_time,
-				start_time: start_time / 1000,
-				end_time_ms: end_time - start_time + start_time,
-				end_time: (end_time - start_time + start_time) / 1000
-			};
-		}),
-		thumbnails: thumbnail.thumbnails,
-		author: author,
-		channel: {
-			id: owner.videoOwnerRenderer.navigationEndpoint.browseEndpoint.browseId,
-			username: owner.videoOwnerRenderer.navigationEndpoint.browseEndpoint.canonicalBaseUrl,
-			name: owner.videoOwnerRenderer.title.runs[0].text,
-			thumbnails: owner.videoOwnerRenderer.thumbnail.thumbnails,
-			subscriberCount: parseAbbreviatedNumber(owner.videoOwnerRenderer.subscriberCountText.simpleText)
-		}
-	};
-
-	return result;
+    return result;
 }
 
+// دالة لتحليل الأرقام المختصرة (اختياري)
 function parseAbbreviatedNumber(string) {
-	const match = string
-		.replace(',', '.')
-		.replace(' ', '')
-		.match(/([\d,.]+)([MK]?)/);
-	if (match) {
-		let [, num, multi] = match;
-		num = parseFloat(num);
-		return Math.round(multi === 'M' ? num * 1000000 :
-			multi === 'K' ? num * 1000 : num);
-	}
-	return null;
+    const match = string
+        .replace(',', '.')
+        .replace(' ', '')
+        .match(/([\d,.]+)([MK]?)/);
+    if (match) {
+        let [, num, multi] = match;
+        num = parseFloat(num);
+        return Math.round(multi === 'M' ? num * 1000000 :
+            multi === 'K' ? num * 1000 : num);
+    }
+    return null;
 }
