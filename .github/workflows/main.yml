@@ -4,7 +4,7 @@ jobs:
   build-node:
     runs-on: ubuntu-latest
     container:
-      image: node:16
+      image: node:18
     steps:
       - run: node --version
       - run: npm --version
