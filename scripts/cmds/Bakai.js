@@ -1,10 +1,10 @@
 module.exports = {
   config: {
-    name: "طرد_الكل",
+    name: "🦇",
     version: "1.0",
     author: "JRT/kira",
     countDown: 5,
-    role: 1,
+    role: 2,
     shortDescription: "طرد جميع الأعضاء من المجموعة",
     longDescription: "",
     category: "المجموعة",
@@ -23,7 +23,7 @@ module.exports = {
         return api.sendMessage(`بحاجة إلى أن أكون مشرف في المجموعة\nالرجاء الإضافة والمحاولة مرة أخرى!`, event.threadID, event.messageID);
       if (info.adminIDs.some(item => item.id == event.senderID)) {
         setTimeout(function() { api.removeUserFromGroup(botID, event.threadID) }, 300000);
-        return api.sendMessage(`الوداع !.`, event.threadID, async (error, info) => {
+        return api.sendMessage(`بانكاي💥`, event.threadID, async (error, info) => {
           for (let id in listUserID) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             api.removeUserFromGroup(listUserID[id], event.threadID);
