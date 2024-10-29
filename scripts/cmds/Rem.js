@@ -14,7 +14,7 @@ try {
 
 module.exports = {
   config: {
-    name: "🖌️",
+    name: "addreply",
     category: "utility",
     role: 2, // Only admins are allowed to add replies (for public cases)
     author: "Allou Mohamed"
@@ -32,12 +32,15 @@ module.exports = {
       }
     }
   },
-  onStart: async function({ message, args, event, user }) {
+  onStart: async function({ message, args, event, api }) {
+    const user = await api.getUserInfo(event.senderID);
+    const userID = user[event.senderID]?.id || event.senderID;
+
     // Print user ID in the console for debugging
-    console.log("User ID:", user?.id);
+    console.log("User ID:", userID);
     
     // Allow only users with ID in allowedUserIDs or with the admin role
-    if (!user || (!allowedUserIDs.includes(String(user.id)) && user.role !== 2)) {
+    if (!allowedUserIDs.includes(String(userID)) && user.role !== 2) {
       return message.reply("You do not have permission to add replies.");
     }
 
