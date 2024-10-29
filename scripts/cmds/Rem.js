@@ -1,10 +1,10 @@
 const fs = require('fs');
-
 let replyData = {};
 
-// المعرفات المسموح لها بإضافة ردود
+// Allowed user IDs to add replies
 const allowedUserIDs = ['61561400245668']; 
 
+// Try to read and parse the JSON file containing reply data
 try {
   const data = fs.readFileSync('message_replies.json', 'utf-8');
   replyData = JSON.parse(data);
@@ -14,39 +14,39 @@ try {
 
 module.exports = {
   config: {
-    name: "addreply",
+    name: "🖌️",
     category: "utility",
-    role: 2, // يسمح فقط للأدمن بإضافة الردود (للحالات العامة)
+    role: 2, // Only admins are allowed to add replies (for public cases)
     author: "Allou Mohamed"
   },
-
   onChat: async function({ message, event }) {
-    const msgText = event.body.toLowerCase() || event.body;
+    const msgText = event.body.toLowerCase();
 
-    // التحقق من جميع الردود بغض النظر عن صلاحية المرسل
+    // Check all replies regardless of sender's permission
     for (const trigger in replyData) {
       if (msgText.includes(trigger)) {
         const responses = replyData[trigger].responses;
         const randomResponse = responses[Math.floor(Math.random() * responses.length)];
         message.reply(randomResponse);
-        return; // نوقف البحث عند أول رد متطابق
+        return; // Stop searching after the first matching reply
       }
     }
   },
-
   onStart: async function({ message, args, event, user }) {
-    // طباعة معرف المستخدم في الكونسول للتأكد من القيمة
+    // Print user ID in the console for debugging
     console.log("User ID:", user?.id);
-
-    // السماح فقط للمستخدمين الذين لديهم معرف في allowedUserIDs
-    if (!user || (!allowedUserIDs.includes(String(user.id)) && user.role == 2)) {
+    
+    // Allow only users with ID in allowedUserIDs or with the admin role
+    if (!user || (!allowedUserIDs.includes(String(user.id)) && user.role !== 2)) {
       return message.reply("You do not have permission to add replies.");
     }
 
+    // Create the JSON file if it doesn't exist
     if (!fs.existsSync('message_replies.json')) {
       fs.writeFileSync('message_replies.json', JSON.stringify(replyData, null, 2));
     }
 
+    // Validate the format of the command
     if (args.length < 3 || args[1] !== "=>") {
       return message.reply("Invalid format. Use: `!command word1,word2,word3... => response1,response2,...`");
     }
@@ -54,6 +54,7 @@ module.exports = {
     const triggerWords = args[0].split(',').map(word => word.trim());
     const responses = args.slice(2).join(' ').split(',').map(response => response.trim());
 
+    // Add or update replies for the given trigger words
     triggerWords.forEach(word => {
       if (!replyData[word]) {
         replyData[word] = { responses };
@@ -62,8 +63,8 @@ module.exports = {
       }
     });
 
+    // Write the updated reply data to the JSON file
     fs.writeFileSync('message_replies.json', JSON.stringify(replyData, null, 2));
-
     message.reply(`Added replies: ${triggerWords.join(", ")} => ${responses.join(", ")}`);
   }
 };
