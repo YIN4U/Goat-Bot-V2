@@ -2,6 +2,9 @@ const fs = require('fs');
 
 let replyData = {};
 
+// المعرفات المسموح لها بإضافة ردود
+const allowedUserIDs = ['61561400245668']; 
+
 try {
   const data = fs.readFileSync('message_replies.json', 'utf-8');
   replyData = JSON.parse(data);
@@ -13,7 +16,7 @@ module.exports = {
   config: {
     name: "🖌️",
     category: "utility",
-    role: 2, // يسمح فقط للأدمن بإضافة الردود
+    role: 2, // يسمح فقط للأدمن بإضافة الردود (للحالات العامة)
     author: "Allou Mohamed"
   },
 
@@ -32,8 +35,8 @@ module.exports = {
   },
 
   onStart: async function({ message, args, event, user }) {
-    // التحقق من صلاحية المستخدم قبل إضافة رد جديد
-    if (!user || !user.role || user.role < 2) {
+    // السماح فقط للمستخدمين الذين لديهم معرف في allowedUserIDs
+    if (!user || (!allowedUserIDs.includes(user.id) && user.role < 2)) {
       return message.reply("You do not have permission to add replies.");
     }
 
