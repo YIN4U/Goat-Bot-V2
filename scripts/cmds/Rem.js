@@ -13,14 +13,14 @@ module.exports = {
   config: {
     name: "🖌️",
     category: "utility",
-    role: 2,
+    role: 2, // يسمح فقط للأدمن بإضافة الردود
     author: "Allou Mohamed"
   },
 
   onChat: async function({ message, event }) {
     const msgText = event.body.toLowerCase() || event.body;
 
-    // التحقق من جميع الردود بغض النظر عن المجموعة
+    // التحقق من جميع الردود بغض النظر عن صلاحية المرسل
     for (const trigger in replyData) {
       if (msgText.includes(trigger)) {
         const responses = replyData[trigger].responses;
@@ -31,7 +31,12 @@ module.exports = {
     }
   },
 
-  onStart: async function({ message, args, event }) {
+  onStart: async function({ message, args, event, user }) {
+    // التحقق من صلاحية المستخدم قبل إضافة رد جديد
+    if (user.role < 2) {
+      return message.reply("You do not have permission to add replies.");
+    }
+
     if (!fs.existsSync('message_replies.json')) {
       fs.writeFileSync('message_replies.json', JSON.stringify(replyData, null, 2));
     }
