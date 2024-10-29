@@ -33,7 +33,7 @@ module.exports = {
 
   onStart: async function({ message, args, event, user }) {
     // التحقق من صلاحية المستخدم قبل إضافة رد جديد
-    if (user.role < 2) {
+    if (!user || !user.role || user.role < 2) {
       return message.reply("You do not have permission to add replies.");
     }
 
