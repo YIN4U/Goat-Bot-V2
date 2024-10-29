@@ -1,8 +1,10 @@
 const fs = require('fs');
+
+// Initialize reply data
 let replyData = {};
 
-// Allowed user IDs to add replies
-const allowedUserIDs = ['61561400245668']; 
+// Allowed user IDs to add replies (Admins)
+const allowedUserIDs = ['61561400245668'];
 
 // Try to read and parse the JSON file containing reply data
 try {
@@ -14,14 +16,14 @@ try {
 
 module.exports = {
   config: {
-    name: "addreply",
+    name: "🖌️",
     category: "utility",
     role: 2, // Only admins are allowed to add replies (for public cases)
     author: "Allou Mohamed"
   },
+  // Function to handle incoming chat messages
   onChat: async function({ message, event }) {
     const msgText = event.body.toLowerCase();
-
     // Check all replies regardless of sender's permission
     for (const trigger in replyData) {
       if (msgText.includes(trigger)) {
@@ -32,13 +34,14 @@ module.exports = {
       }
     }
   },
+  // Function to handle adding new replies
   onStart: async function({ message, args, event, api }) {
     const user = await api.getUserInfo(event.senderID);
     const userID = user[event.senderID]?.id || event.senderID;
 
     // Print user ID in the console for debugging
     console.log("User ID:", userID);
-    
+
     // Allow only users with ID in allowedUserIDs or with the admin role
     if (!allowedUserIDs.includes(String(userID)) && user.role !== 2) {
       return message.reply("You do not have permission to add replies.");
@@ -67,7 +70,12 @@ module.exports = {
     });
 
     // Write the updated reply data to the JSON file
-    fs.writeFileSync('message_replies.json', JSON.stringify(replyData, null, 2));
-    message.reply(`Added replies: ${triggerWords.join(", ")} => ${responses.join(", ")}`);
+    try {
+      fs.writeFileSync('message_replies.json', JSON.stringify(replyData, null, 2));
+      message.reply(`Added replies: ${triggerWords.join(", ")} => ${responses.join(", ")}`);
+    } catch (error) {
+      console.error('Error writing to JSON file:', error.message);
+      message.reply("There was an error saving the replies. Please try again.");
+    }
   }
 };
