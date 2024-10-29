@@ -4,7 +4,7 @@ const fs = require('fs');
 let replyData = {};
 
 // Allowed user IDs to add replies (Admins)
-const allowedUserIDs = ['61561400245668'];
+const allowedUserIDs = ['61561400245668','61561175994395'];
 
 // Try to read and parse the JSON file containing reply data
 try {
