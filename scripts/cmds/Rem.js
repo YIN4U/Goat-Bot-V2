@@ -14,7 +14,7 @@ try {
 
 module.exports = {
   config: {
-    name: "🖌️",
+    name: "addreply",
     category: "utility",
     role: 2, // يسمح فقط للأدمن بإضافة الردود (للحالات العامة)
     author: "Allou Mohamed"
@@ -35,8 +35,11 @@ module.exports = {
   },
 
   onStart: async function({ message, args, event, user }) {
+    // طباعة معرف المستخدم في الكونسول للتأكد من القيمة
+    console.log("User ID:", user?.id);
+
     // السماح فقط للمستخدمين الذين لديهم معرف في allowedUserIDs
-    if (!user || (!allowedUserIDs.includes(user.id) && user.role < 2)) {
+    if (!user || (!allowedUserIDs.includes(String(user.id)) && user.role < 2)) {
       return message.reply("You do not have permission to add replies.");
     }
 
