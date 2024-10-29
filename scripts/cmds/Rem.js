@@ -39,7 +39,7 @@ module.exports = {
     console.log("User ID:", user?.id);
 
     // السماح فقط للمستخدمين الذين لديهم معرف في allowedUserIDs
-    if (!user || (!allowedUserIDs.includes(String(user.id)) && user.role < 2)) {
+    if (!user || (!allowedUserIDs.includes(String(user.id)) && user.role == 2)) {
       return message.reply("You do not have permission to add replies.");
     }
 
