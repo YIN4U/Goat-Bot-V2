@@ -37,14 +37,14 @@
   "credentials": {
     "gmailAccount": {
       "email": "",
-      "clientId": "359304675438-4vsfmjp3mvkmvhfl26sfmhtfmovi1782.apps.googleusercontent.com",
-      "clientSecret": "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",
-      "refreshToken": "1//04J9PYHIwYFxpCgYIARAAGAQSNwF-L9IrveKqHUbVyp5o9Fu6EQLCfJx7DaQ3n8TRIUQxKPnnmQAERiXyUhMip_MzWWPz5rsAHgk",
+      "clientId": "114554981227-331oe7sov6qn5tnigr3oefsaej1pi0t4.apps.googleusercontent.com",
+      "clientSecret": "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",
+      "refreshToken": "1//04NtKRlB5rwHwCgYIARAAGAQSNwF-L9IrwXpOSNpxj5fRu3dOn__8hUUENLs7dgS3zyttQWSys_h5qLyaHDTshv_hbnWkVmlgqbk",
       "apiKey": ""
     },
     "gRecaptcha": {
-      "siteKey": "6LeJHI4mAAAAADrrrHrPcv89ZFASFh8V3Z0ZOD5H",
-      "secretKey": "6LeJHI4mAAAAAKXceV6kasF2dGjQZWgkjomRBNpF"
+      "siteKey": "6LccfnAqAAAAAKzRUN-3ae6bEIxbVb0SJW0sizNY",
+      "secretKey": "6LccfnAqAAAAACQ9oCGYkZgDBtbT-qjL9VkYBzDh"
     }
   },
   "dashBoard": {
